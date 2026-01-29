@@ -1,0 +1,196 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Clinical Trial Decision Tree — SCU Research</title>
+  <style>
+    :root{
+      --scu-navy:#015E87; --scu-teal:#00A6B6; --scu-gold:#FCB817; --scu-ivory:#F2F2F3;
+      --bg: var(--scu-ivory); --card:#ffffff; --text:#062433; --muted:#4d6976; --border:#e4e7ea;
+    }
+    html,body{height:100%;}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; margin:0; background:var(--bg); color:var(--text);} 
+    .brandbar{background:linear-gradient(90deg,var(--scu-navy),var(--scu-teal)); height:6px;}
+    header{padding:18px 20px 10px; position:relative;}
+    .header-inner{max-width:980px; margin:0 auto; display:flex; align-items:center; gap:14px}
+    .logo{width:64px; height:64px; object-fit:contain}
+    .titlewrap h1{font-size:1.6rem; line-height:1.2; margin:0; color:var(--scu-navy);}
+    .titlewrap p{margin:4px 0 0; color:var(--muted)}
+
+    /* Sticky restart top-right */
+    .sticky-restart{position:fixed; right:16px; top:12px; z-index:9999;}
+    .sticky-restart button{appearance:none; border:none; padding:10px 14px; border-radius:22px; font-weight:800; cursor:pointer; transition:.15s ease;
+      background:#ffffff; color:var(--scu-navy); border:2px solid var(--scu-navy); box-shadow:0 6px 16px rgba(1,94,135,.15)}
+    .sticky-restart button:hover{transform:translateY(-1px)}
+
+    .container{max-width:980px; margin:14px auto 40px; padding:0 16px;}
+    .card{background:var(--card); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 30px rgba(1,94,135,.08); overflow:hidden}
+
+    .content{padding:20px}
+    .step{display:none;}
+    .step.active{display:block; animation:fade .2s ease-in}
+    @keyframes fade {from{opacity:.2; transform:translateY(4px)} to{opacity:1; transform:none}}
+
+    .q{font-size:1.15rem; font-weight:700; margin:0 0 12px; color:var(--scu-navy)}
+    .hl{background:rgba(0,166,182,.12); padding:3px 6px; border-radius:6px}
+
+    .btnrow{display:flex; gap:10px; flex-wrap:wrap}
+    button{appearance:none; border:none; padding:12px 16px; border-radius:12px; font-weight:700; cursor:pointer; transition:.15s ease;}
+    button.yes{background:linear-gradient(180deg,var(--scu-teal),#0593a3); color:white}
+    button.no{background:linear-gradient(180deg,var(--scu-gold),#e2a710); color:#2a1f00}
+    button.alt{background:#ffffff; color:var(--scu-navy); border:2px solid var(--scu-navy)}
+    button:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(1,94,135,.18)}
+
+    .controls{display:flex; gap:10px; margin-top:12px;}
+
+    .result{display:none; padding:16px; border-radius:12px; margin-top:10px; background:#fffbe6; border:1px solid #f1de86; color:#5c4600}
+    .result.show{display:block}
+
+    details{margin-top:10px}
+    summary{color:var(--scu-teal); font-weight:600}
+
+    .footer{color:var(--muted); font-size:.9rem; padding:10px 20px 24px; text-align:center}
+    code.k{background:#eef4f7; padding:1px 6px; border-radius:6px; border:1px solid var(--border)}
+  </style>
+</head>
+<body>
+  <div class="brandbar" aria-hidden="true"></div>
+  <div class="sticky-restart">
+    <button onclick="restart()" aria-label="Start over">Start over</button>
+  </div>
+  <header>
+    <div class="header-inner">
+      <img class="logo" src="SCU_research_square-100.jpg" alt="Southern Cross University Research logo" />
+      <div class="titlewrap">
+        <h1>Clinical Trial Decision Tree</h1>
+        <p>Southern Cross University — Research</p>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <div class="content">
+        <!-- Step 1 -->
+        <div class="step active" id="step1">
+          <p class="q">1) Does your research involve <span class="hl">human participants</span> or groups of human participants?</p>
+          <div class="btnrow">
+            <button class="no" onclick="goto('not_ct1')">No</button>
+            <button class="yes" onclick="goto('step2')">Yes</button>
+          </div>
+          <div id="not_ct1" class="result">
+            The study is <strong>not</strong> a clinical trial.
+          </div>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step" id="step2">
+          <p class="q">2) Will participants be <span class="hl">prospectively</span> assigned to one or more interventions according to the research design?</p>
+          <div class="btnrow">
+            <button class="no" onclick="goto('not_ct2')">No</button>
+            <button class="yes" onclick="goto('step3')">Yes</button>
+          </div>
+          <div id="not_ct2" class="result">The study is <strong>not</strong> a clinical trial.</div>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step" id="step3">
+          <p class="q">3) Is at least one of the interventions <span class="hl">health‑related</span><sup>*</sup>?</p>
+          <div class="btnrow">
+            <button class="no" onclick="goto('not_ct3')">No</button>
+            <button class="yes" onclick="goto('step4')">Yes</button>
+          </div>
+          <div id="not_ct3" class="result">The study is <strong>not</strong> a clinical trial.</div>
+          <details>
+            <summary><em>What counts as a health‑related intervention?</em></summary>
+            <ul>
+              <li>Procedures to modify a health‑related process or behavior (e.g., drugs, devices, surgery, behavioral programs).</li>
+              <li>Preventive, diagnostic, therapeutic, or rehabilitative approaches.</li>
+              <li>System or policy changes intended to affect health outcomes.</li>
+            </ul>
+            <p style="color:#4d6976;margin-top:8px">* Definitions may vary by regulator or sponsor—confirm with your local policy.</p>
+          </details>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="step" id="step4">
+          <p class="q">4) Is your research measuring <span class="hl">health outcomes</span>?</p>
+          <div class="btnrow">
+            <button class="no" onclick="goto('not_ct4')">No</button>
+            <button class="yes" onclick="goto('step5')">Yes</button>
+          </div>
+          <div id="not_ct4" class="result">The study is <strong>not</strong> a clinical trial.</div>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="step" id="step5">
+          <p class="q">5) Do the measured health outcomes <span class="hl">relate to</span> any of the interventions?</p>
+          <div class="btnrow">
+            <button class="no" onclick="goto('not_ct5')">No</button>
+            <button class="yes" onclick="goto('is_ct')">Yes</button>
+          </div>
+          <div id="not_ct5" class="result">The study is <strong>not</strong> a clinical trial.</div>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+        <!-- Result: IS CT -->
+        <div class="step" id="is_ct">
+          <h2 style="color:var(--scu-teal); margin-top:0">✅ The study <em>is</em> a clinical trial.</h2>
+          <p>Next steps may include trial registration, ethics approval, and data management planning according to your institution's requirements.</p>
+          <div class="controls">
+            <button class="alt" onclick="restart()">Start over</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <section class="footer">
+      <p><strong>Tip:</strong> Use <code class="k">Start over</code> on any screen. Colours: Navy <code class="k">#015E87</code>, Teal <code class="k">#00A6B6</code>, Gold <code class="k">#FCB817</code>, Light <code class="k">#F2F2F3</code>.</p>
+    </section>
+  </main>
+
+  <script>
+    const steps = ["step1","step2","step3","step4","step5","is_ct"]; // order for reset
+
+    function hideAll(){
+      steps.forEach(id=>document.getElementById(id).classList.remove('active'));
+      ["not_ct1","not_ct2","not_ct3","not_ct4","not_ct5"].forEach(id=>{
+        const el = document.getElementById(id); if(el){el.classList.remove('show');}
+      });
+    }
+
+    function goto(id){
+      if(id.startsWith('not_ct')){
+        const el = document.getElementById(id); if(el){ el.classList.add('show'); }
+        return;
+      }
+      hideAll();
+      const el = document.getElementById(id);
+      if(el){ el.classList.add('active'); window.scrollTo({top:0, behavior:'smooth'}); }
+    }
+
+    function restart(){
+      hideAll();
+      document.getElementById('step1').classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+    }
+  </script>
+</body>
+</html>
